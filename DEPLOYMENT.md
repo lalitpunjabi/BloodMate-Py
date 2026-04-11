@@ -30,34 +30,43 @@ curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
 ```
 
-## 4. Cloning and Backend Setup
-Clone your repository (replace with your actual git repo):
-```bash
-git clone <YOUR_GIT_REPO> bloodmate
-cd bloodmate/backend
+## 4. GitHub Actions Automated Pipeline Setup
+BloodMate utilizes a highly enterprise CI/CD pipeline via GitHub Actions. Instead of manually cloning code inside the server, GitHub will automatically do it for you securely via SSH!
 
-# Create and activate virtual environment
+### Setup Secrets
+On your **GitHub Web Dashboard**, navigate to your `MedTracks` repository.
+1. Click **Settings** > **Secrets and variables** > **Actions**.
+2. Click **New repository secret**.
+
+You must create precisely these 3 secrets to allow the pipeline into your EC2 server:
+
+* **Name:** `HOST`
+  * **Secret:** Your AWS EC2 Public IPv4 Address (e.g. `12.34.56.78`)
+* **Name:** `USERNAME`
+  * **Secret:** `ubuntu` (Since you provisioned an Ubuntu Server)
+* **Name:** `SSH_KEY`
+  * **Secret:** The entire contents of your `.pem` key file (Open it in VSCode, copy everything from `-----BEGIN RSA PRIVATE KEY-----` to `-----END RSA PRIVATE KEY-----`).
+
+## 5. First Time Manual Git Clone
+For the GitHub Action to orchestrate perfectly, the pipeline expects the code to reside in `/home/ubuntu/bloodmate`. 
+SSH into your terminal natively once and run:
+```bash
+git clone <YOUR_GIT_REPO_URL> bloodmate
+cd bloodmate/backend
 python3 -m venv venv
 source venv/bin/activate
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Create .env file for production
 echo "DATABASE_URL=sqlite:///./sql_app.db" > .env
-# Note: For PostgreSQL, use DATABASE_URL=postgresql://user:password@localhost/dbname
 echo "SECRET_KEY=your_super_secret_jwt_key_here" >> .env
 ```
 
-## 5. Running Backend with Systemd
-Instead of keeping the terminal open, we run FastAPI continuously using `systemd`.
-
-Create the service file:
+## 6. Systemd API Demonization
+To ensure FastAPI boots beautifully and stays alive globally, establish a core `systemd` wrapper securely around it:
 ```bash
 sudo nano /etc/systemd/system/bloodmate.service
 ```
 
-Paste the following (adjust paths if needed):
+Paste the following securely:
 ```ini
 [Unit]
 Description=Gunicorn/Uvicorn instance to serve BloodMate API
@@ -74,20 +83,13 @@ ExecStart=/home/ubuntu/bloodmate/backend/venv/bin/uvicorn app.main:app --host 12
 WantedBy=multi-user.target
 ```
 
-Enable and start the service:
+Execute it:
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl start bloodmate
-sudo systemctl enable bloodmate
+sudo systemctl enable --now bloodmate
 ```
 
-## 6. Frontend Build
-```bash
-cd /home/ubuntu/bloodmate/frontend
-npm install
-npm run build
-```
-This generates a `dist` folder. We will serve this statically.
+**Now, anytime you `git commit` and `git push` to `main`, GitHub Actions will natively intercept your push, automatically log into the server, natively rebuild React's production bundle, and cleanly bounce `bloodmate.service` with zero downtime!**
 
 ## 7. Nginx Setup & Domain Routing
 Go to your domain provider (Hostinger, where you purchased your `.xyz` domain) and point your **A Record** to your EC2 Public IP Address.
