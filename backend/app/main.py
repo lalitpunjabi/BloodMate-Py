@@ -3,8 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.db.database import engine, Base
 from app.core.config import settings
 
+from app.db import models
+
 # Create database tables (For dev, in prod use Alembic)
-Base.metadata.create_all(bind=engine)
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
