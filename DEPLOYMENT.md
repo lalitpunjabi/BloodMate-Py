@@ -34,7 +34,7 @@ sudo apt install -y nodejs
 BloodMate utilizes a highly enterprise CI/CD pipeline via GitHub Actions. Instead of manually cloning code inside the server, GitHub will automatically do it for you securely via SSH!
 
 ### Setup Secrets
-On your **GitHub Web Dashboard**, navigate to your `MedTracks` repository.
+On your **GitHub Web Dashboard**, navigate to your `BloodMate-Py` repository.
 1. Click **Settings** > **Secrets and variables** > **Actions**.
 2. Click **New repository secret**.
 
@@ -51,8 +51,8 @@ You must create precisely these 3 secrets to allow the pipeline into your EC2 se
 For the GitHub Action to orchestrate perfectly, the pipeline expects the code to reside in `/home/ubuntu/BloodMate-Py`. 
 SSH into your terminal natively once and run:
 ```bash
-git clone <YOUR_GIT_REPO_URL> BloodMate-Py
-cd BloodMate-Py/backend
+git clone <YOUR_GIT_REPO_URL> bloodmate
+cd bloodmate/backend
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
