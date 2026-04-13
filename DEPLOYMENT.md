@@ -34,7 +34,7 @@ sudo apt install -y nodejs
 BloodMate utilizes a highly enterprise CI/CD pipeline via GitHub Actions. Instead of manually cloning code inside the server, GitHub will automatically do it for you securely via SSH!
 
 ### Setup Secrets
-On your **GitHub Web Dashboard**, navigate to your `MedTracks` repository.
+On your **GitHub Web Dashboard**, navigate to your `BloodMate-Py` repository.
 1. Click **Settings** > **Secrets and variables** > **Actions**.
 2. Click **New repository secret**.
 
