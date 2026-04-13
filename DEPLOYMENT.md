@@ -56,8 +56,8 @@ cd bloodmate/backend
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-echo "DATABASE_URL=postgresql://bloodmate_admin:SecurePassword123!@localhost:5432/bloodmate_db" > .env
-echo "SECRET_KEY=46ad8a6d981a2441e0e2e20f0babd013becab71fde39f930247674195060205d" >> .env
+echo 'DATABASE_URL=postgresql://bloodmate_admin:SecurePassword123!@localhost:5432/bloodmate_db' > .env
+echo 'SECRET_KEY=46ad8a6d981a2441e0e2e20f0babd013becab71fde39f930247674195060205d' >> .env
 ```
 
 ## 6. Systemd API Demonization
