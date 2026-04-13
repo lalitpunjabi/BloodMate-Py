@@ -18,7 +18,7 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         script: |
-          cd /home/ubuntu/bloodmate
+          cd /home/ubuntu/BloodMate-Py
           
           echo "🔄 Pulling latest secure codebase..."
           git fetch origin main

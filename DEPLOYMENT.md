@@ -34,7 +34,7 @@ sudo apt install -y nodejs
 BloodMate utilizes a highly enterprise CI/CD pipeline via GitHub Actions. Instead of manually cloning code inside the server, GitHub will automatically do it for you securely via SSH!
 
 ### Setup Secrets
-On your **GitHub Web Dashboard**, navigate to your `BloodMate-Py` repository.
+On your **GitHub Web Dashboard**, navigate to your `MedTracks` repository.
 1. Click **Settings** > **Secrets and variables** > **Actions**.
 2. Click **New repository secret**.
 
@@ -48,22 +48,22 @@ You must create precisely these 3 secrets to allow the pipeline into your EC2 se
   * **Secret:** The entire contents of your `.pem` key file (Open it in VSCode, copy everything from `-----BEGIN RSA PRIVATE KEY-----` to `-----END RSA PRIVATE KEY-----`).
 
 ## 5. First Time Manual Git Clone
-For the GitHub Action to orchestrate perfectly, the pipeline expects the code to reside in `/home/ubuntu/bloodmate`. 
+For the GitHub Action to orchestrate perfectly, the pipeline expects the code to reside in `/home/ubuntu/BloodMate-Py`. 
 SSH into your terminal natively once and run:
 ```bash
-git clone <YOUR_GIT_REPO_URL> bloodmate
-cd bloodmate/backend
+git clone <YOUR_GIT_REPO_URL> BloodMate-Py
+cd BloodMate-Py/backend
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-echo "DATABASE_URL=sqlite:///./sql_app.db" > .env
-echo "SECRET_KEY=your_super_secret_jwt_key_here" >> .env
+echo 'DATABASE_URL=postgresql://bloodmate_admin:SecurePassword123!@localhost:5432/bloodmate_db' > .env
+echo 'SECRET_KEY=46ad8a6d981a2441e0e2e20f0babd013becab71fde39f930247674195060205d' >> .env
 ```
 
 ## 6. Systemd API Demonization
 To ensure FastAPI boots beautifully and stays alive globally, establish a core `systemd` wrapper securely around it:
 ```bash
-sudo nano /etc/systemd/system/bloodmate.service
+sudo nano /etc/systemd/system/BloodMate-Py.service
 ```
 
 Paste the following securely:
@@ -75,9 +75,9 @@ After=network.target
 [Service]
 User=ubuntu
 Group=www-data
-WorkingDirectory=/home/ubuntu/bloodmate/backend
-Environment="PATH=/home/ubuntu/bloodmate/backend/venv/bin"
-ExecStart=/home/ubuntu/bloodmate/backend/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 4
+WorkingDirectory=/home/ubuntu/BloodMate-Py/backend
+Environment="PATH=/home/ubuntu/BloodMate-Py/backend/venv/bin"
+ExecStart=/home/ubuntu/BloodMate-Py/backend/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 4
 
 [Install]
 WantedBy=multi-user.target
@@ -86,10 +86,10 @@ WantedBy=multi-user.target
 Execute it:
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now bloodmate
+sudo systemctl enable --now BloodMate-Py
 ```
 
-**Now, anytime you `git commit` and `git push` to `main`, GitHub Actions will natively intercept your push, automatically log into the server, natively rebuild React's production bundle, and cleanly bounce `bloodmate.service` with zero downtime!**
+**Now, anytime you `git commit` and `git push` to `main`, GitHub Actions will natively intercept your push, automatically log into the server, natively rebuild React's production bundle, and cleanly bounce `BloodMate-Py.service` with zero downtime!**
 
 ## 7. Nginx Setup & Domain Routing
 Go to your domain provider (Hostinger, where you purchased your `.xyz` domain) and point your **A Record** to your EC2 Public IP Address.
@@ -99,8 +99,8 @@ See the provided `nginx.conf` file in the root of the project.
 
 Copy the config to Nginx:
 ```bash
-sudo cp /home/ubuntu/bloodmate/nginx.conf /etc/nginx/sites-available/bloodmate
-sudo ln -s /etc/nginx/sites-available/bloodmate /etc/nginx/sites-enabled/
+sudo cp /home/ubuntu/BloodMate-Py/nginx.conf /etc/nginx/sites-available/BloodMate-Py
+sudo ln -s /etc/nginx/sites-available/BloodMate-Py /etc/nginx/sites-enabled/
 # Remove default nginx config
 sudo rm /etc/nginx/sites-enabled/default
 
