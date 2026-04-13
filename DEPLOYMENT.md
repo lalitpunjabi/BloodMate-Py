@@ -56,7 +56,7 @@ cd bloodmate/backend
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-echo "DATABASE_URL=sqlite:///./sql_app.db" > .env
+echo "DATABASE_URL=postgresql://bloodmate_admin:SecurePassword123!@localhost:5432/bloodmate_db" > .env
 echo "SECRET_KEY=your_super_secret_jwt_key_here" >> .env
 ```
 
