@@ -106,6 +106,14 @@ sudo rm /etc/nginx/sites-enabled/default
 
 sudo systemctl restart nginx
 ```
+cd ~/BloodMate-Py/frontend
+npm install
+npm run build
+
+sudo chmod +x /home/ubuntu
+sudo chmod -R 755 ~/BloodMate-Py/frontend/dist
+
+sudo systemctl restart nginx
 
 ## 8. HTTPS Setup (Let's Encrypt / Certbot)
 Secure your web application with a free SSL certificate.
