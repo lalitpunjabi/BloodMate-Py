@@ -34,7 +34,7 @@ sudo apt install -y nodejs
 BloodMate utilizes a highly enterprise CI/CD pipeline via GitHub Actions. Instead of manually cloning code inside the server, GitHub will automatically do it for you securely via SSH!
 
 ### Setup Secrets
-On your **GitHub Web Dashboard**, navigate to your `MedTracks` repository.
+On your **GitHub Web Dashboard**, navigate to your `BloodMate-Py` repository.
 1. Click **Settings** > **Secrets and variables** > **Actions**.
 2. Click **New repository secret**.
 
@@ -79,7 +79,7 @@ pip install -r requirements.txt
 
 Construct your backend environment variable securely replacing the RDS_ENDPOINT_URL with the massive string you copied from AWS:
 ```bash
-echo "DATABASE_URL=postgresql://bloodmate_admin:YOUR_PASSWORD_HERE@<RDS_ENDPOINT_URL>:5432/postgres" > .env
+echo "DATABASE_URL=postgresql://bloodmate_admin:BloodMate-rds2026@<bloodmate-rds.cbwqoak205d5.ap-south-1.rds.amazonaws.com>:5432/postgres" > .env
 echo "SECRET_KEY=46ad8a6d981a2441e0e2e20f0babd013becab71fde39f930247674195060205d" >> .env
 ```
 
