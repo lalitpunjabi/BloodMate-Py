@@ -18,7 +18,7 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         script: |
-          cd /home/ubuntu/BloodMate-Py
+          cd /home/ubuntu/bloodmate
           
           echo "🔄 Pulling latest secure codebase..."
           git fetch origin main
@@ -35,6 +35,6 @@ jobs:
           pip install -r requirements.txt
           
           echo "🚀 Restarting secure API Services..."
-          sudo systemctl restart bloodmate
+          sudo systemctl restart BloodMate-py
           
           echo "✅ Pipeline successfully executed."

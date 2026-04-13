@@ -34,7 +34,7 @@ sudo apt install -y nodejs
 BloodMate utilizes a highly enterprise CI/CD pipeline via GitHub Actions. Instead of manually cloning code inside the server, GitHub will automatically do it for you securely via SSH!
 
 ### Setup Secrets
-On your **GitHub Web Dashboard**, navigate to your `BloodMate-Py` repository.
+On your **GitHub Web Dashboard**, navigate to your `MedTracks` repository.
 1. Click **Settings** > **Secrets and variables** > **Actions**.
 2. Click **New repository secret**.
 
@@ -47,26 +47,49 @@ You must create precisely these 3 secrets to allow the pipeline into your EC2 se
 * **Name:** `SSH_KEY`
   * **Secret:** The entire contents of your `.pem` key file (Open it in VSCode, copy everything from `-----BEGIN RSA PRIVATE KEY-----` to `-----END RSA PRIVATE KEY-----`).
 
-## 5. First Time Manual Git Clone
-For the GitHub Action to orchestrate perfectly, the pipeline expects the code to reside in `/home/ubuntu/BloodMate-Py`. 
-SSH into your terminal natively once and run:
+## 5. Amazon RDS Postgres Database setup
+
+To ensure massive enterprise scalability and absolute data safety against server crashes, BloodMate connects to an external **Amazon Relational Database Service (RDS)** rather than storing data directly on the web server.
+
+1. Go back to your AWS Management Console and search for **RDS**.
+2. Click **Create Database**.
+3. Select **PostgreSQL** (Ensure you check the **Free Tier** template option!)
+4. **Settings:** Name the DB instance `bloodmate-rds`. 
+5. Set the Master Username to `bloodmate_admin` and manually type a Master Password.
+6. **Connectivity:** Ensure **Public Access** is set to `No`. 
+7. Create your database and wait for AWS to fully spin it up.
+8. Once Active, click on the database and copy the **Endpoint** URL string (it looks like `bloodmate-rds.xxxxx.us-east-1.rds.amazonaws.com`).
+
+### Crucial RDS Security Group Bridging
+Because your RDS Database is heavily structurally protected, it mathematically blocks all internet traffic! You must explicitly allow your EC2 server to talk to it:
+1. In the RDS dashboard, click the **VPC Security Group** attached to your database.
+2. Edit its **Inbound Rules**.
+3. Add a new Postgres (port 5432) rule and select the specific Security Group attached to your *EC2 Server* as the Source (this bridges the EC2 machine directly to the database).
+
+## 6. First Time Manual Git Clone
+For the GitHub Action to orchestrate perfectly, the pipeline expects the code to reside precisely in `/home/ubuntu/BloodMate-Py`. 
+SSH into your EC2 terminal natively once and run:
 ```bash
-git clone <YOUR_GIT_REPO_URL> bloodmate
-cd bloodmate/backend
+git clone <YOUR_GIT_REPO_URL> BloodMate-Py
+cd BloodMate-Py/backend
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-echo 'DATABASE_URL=postgresql://bloodmate_admin:SecurePassword123!@localhost:5432/bloodmate_db' > .env
-echo 'SECRET_KEY=46ad8a6d981a2441e0e2e20f0babd013becab71fde39f930247674195060205d' >> .env
 ```
 
-## 6. Systemd API Demonization
+Construct your backend environment variable securely replacing the RDS_ENDPOINT_URL with the massive string you copied from AWS:
+```bash
+echo "DATABASE_URL=postgresql://bloodmate_admin:YOUR_PASSWORD_HERE@<RDS_ENDPOINT_URL>:5432/postgres" > .env
+echo "SECRET_KEY=46ad8a6d981a2441e0e2e20f0babd013becab71fde39f930247674195060205d" >> .env
+```
+
+## 7. Systemd API Demonization
 To ensure FastAPI boots beautifully and stays alive globally, establish a core `systemd` wrapper securely around it:
 ```bash
 sudo nano /etc/systemd/system/BloodMate-Py.service
 ```
 
-Paste the following securely:
+Paste the following securely (Ensuring paths match your capitalization):
 ```ini
 [Unit]
 Description=Gunicorn/Uvicorn instance to serve BloodMate API
@@ -89,9 +112,9 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now BloodMate-Py
 ```
 
-**Now, anytime you `git commit` and `git push` to `main`, GitHub Actions will natively intercept your push, automatically log into the server, natively rebuild React's production bundle, and cleanly bounce `BloodMate-Py.service` with zero downtime!**
+**Now, anytime you `git commit` and `git push` to `main`, GitHub Actions will natively intercept your push, automatically log into the server, natively rebuild React's production bundle, and cleanly bounce `bloodmate.service` with zero downtime!**
 
-## 7. Nginx Setup & Domain Routing
+## 8. Nginx Setup & Domain Routing
 Go to your domain provider (Hostinger, where you purchased your `.xyz` domain) and point your **A Record** to your EC2 Public IP Address.
 
 Configure Nginx to serve the React frontend on `/` and proxy the backend to `/api/v1`.
@@ -106,16 +129,8 @@ sudo rm /etc/nginx/sites-enabled/default
 
 sudo systemctl restart nginx
 ```
-cd ~/BloodMate-Py/frontend
-npm install
-npm run build
 
-sudo chmod +x /home/ubuntu
-sudo chmod -R 755 ~/BloodMate-Py/frontend/dist
-
-sudo systemctl restart nginx
-
-## 8. HTTPS Setup (Let's Encrypt / Certbot)
+## 9. HTTPS Setup (Let's Encrypt / Certbot)
 Secure your web application with a free SSL certificate.
 ```bash
 sudo apt install certbot python3-certbot-nginx -y
