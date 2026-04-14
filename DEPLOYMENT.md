@@ -115,7 +115,7 @@ sudo systemctl enable --now BloodMate-Py
 **Now, anytime you `git commit` and `git push` to `main`, GitHub Actions will natively intercept your push, automatically log into the server, natively rebuild React's production bundle, and cleanly bounce `bloodmate.service` with zero downtime!**
 
 ## 8. Nginx Setup & Domain Routing
-Go to your domain provider (Hostinger, where you purchased your `.xyz` domain) and point your **A Record** to your EC2 Public IP Address.
+Go to your domain provider (.xyz, where you purchased your `.xyz` domain) and point your **A Record** to your EC2 Public IP Address.
 
 Configure Nginx to serve the React frontend on `/` and proxy the backend to `/api/v1`.
 See the provided `nginx.conf` file in the root of the project.
