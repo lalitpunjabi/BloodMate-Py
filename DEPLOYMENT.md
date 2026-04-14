@@ -5,7 +5,7 @@ This guide provides a straightforward, beginner-friendly process for deploying t
 ## 1. AWS EC2 Instance Setup
 1. Log in to your AWS Console, navigate to **EC2**, and click **Launch Instance**.
 2. Select **Ubuntu Server 22.04 LTS** (or 24.04).
-3. Choose instance type `t2.micro` (Free Tier eligible) or `t3.small`.
+3. Choose instance type `t2.micro` (Free Tier eligible) or `t3.micro`.
 4. Create a new Key Pair (save the `.pem` file to SSH into your server).
 5. Under **Network Settings**, ensure the following checkboxes are ticked:
    - Allow SSH traffic (Port 22)
