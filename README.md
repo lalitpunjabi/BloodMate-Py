@@ -46,11 +46,12 @@ This application isn't just a prototype—it is fully structured and hosted live
 
 To manually boot this massive architecture on your local desktop machine:
 
-**1. Database Initialization (FastAPI):**
+**1. Database Initialization (FastAPI + PostgreSQL):**
 ```bash
 cd backend/
 # Boot your python wrapper
 .\venv\Scripts\activate
+# Create backend\.env from backend\.env.example and point it to your PostgreSQL database
 # Synchronize missing elements
 pip install -r requirements.txt
 # Fire up the engine 
@@ -65,3 +66,34 @@ npm install
 npm run dev
 ```
 *Application GUI renders @ `http://localhost:5173`*
+
+## Database Access
+
+BloodMate is now configured to use **PostgreSQL only**. The backend will fail to start unless `DATABASE_URL` points to a PostgreSQL instance such as AWS RDS.
+
+Example `backend/.env`:
+
+```env
+DATABASE_URL=postgresql://bloodmate_admin:YOUR_PASSWORD@your-rds-endpoint.amazonaws.com:5432/bloodmate
+SECRET_KEY=generate-a-long-random-secret
+```
+
+Create the first application admin user with:
+
+```bash
+cd backend/
+.\venv\Scripts\python.exe create_admin.py --email admin@example.com --full-name "BloodMate Admin"
+```
+
+You will be prompted for the password securely. This creates or updates a user in the `users` table with `role=admin`.
+
+To inspect tables from a PostgreSQL client:
+
+```sql
+\dt
+SELECT * FROM users;
+SELECT * FROM donor_profiles;
+SELECT * FROM blood_units;
+SELECT * FROM blood_requests;
+SELECT * FROM campaigns;
+```

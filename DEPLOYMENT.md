@@ -77,11 +77,24 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Construct your backend environment variable securely replacing the RDS_ENDPOINT_URL with the massive string you copied from AWS:
+Construct your backend environment file securely replacing the RDS endpoint, password, and database name:
 ```bash
-echo "DATABASE_URL=postgresql://bloodmate_admin:BloodMate-rds2026@bloodmate-rds.cbwqoak205d5.ap-south-1.rds.amazonaws.com:5432/postgres" > .env
+cp .env.example .env
+echo "DATABASE_URL=postgresql://bloodmate_admin:YOUR_PASSWORD@bloodmate-rds.cbwqoak205d5.ap-south-1.rds.amazonaws.com:5432/bloodmate" > .env
 echo "SECRET_KEY=46ad8a6d981a2441e0e2e20f0babd013becab71fde39f930247674195060205d" >> .env
 ```
+
+BloodMate now supports **PostgreSQL only**. If `DATABASE_URL` is missing or points to SQLite, the API will refuse to start.
+
+Create your first application admin user after the backend environment is ready:
+
+```bash
+cd /home/ubuntu/BloodMate-Py/backend
+source venv/bin/activate
+python create_admin.py --email admin@example.com --full-name "BloodMate Admin"
+```
+
+Enter the password when prompted. This account is separate from the PostgreSQL `bloodmate_admin` database user and will be stored in the app's `users` table with the `admin` role.
 
 ## 7. Systemd API Demonization
 To ensure FastAPI boots beautifully and stays alive globally, establish a core `systemd` wrapper securely around it:
@@ -140,3 +153,26 @@ Follow the prompts to auto-configure Nginx for HTTPS. Certbot automatically sets
 
 > [!SUCCESS]
 > You are done! Visit `https://bloodmate.xyz` to see BloodMate live in production.
+
+## Inspecting Your AWS RDS Database
+
+Once connected from `psql`, DBeaver, pgAdmin, or an SSH tunnel through EC2, you can inspect the full schema with:
+
+```sql
+\dt
+\d users
+\d donor_profiles
+\d blood_units
+\d blood_requests
+\d campaigns
+```
+
+Read table contents with:
+
+```sql
+SELECT * FROM users;
+SELECT * FROM donor_profiles;
+SELECT * FROM blood_units;
+SELECT * FROM blood_requests;
+SELECT * FROM campaigns;
+```
