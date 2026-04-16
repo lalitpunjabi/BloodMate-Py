@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Droplet, AlertCircle, Activity, X, Award, Shield } from 'lucide-react';
+import { Users, Droplet, AlertCircle, Activity, X, Award, Shield, Siren, Clock3, HeartPulse } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import api from '../services/api';
 
@@ -66,24 +66,9 @@ function Dashboard() {
     }
   };
 
-  // Dummy chart data until analytics implements historical timeseries explicitly
-  const chartData = [
-    { name: 'Mon', donations: 40, requests: 24 },
-    { name: 'Tue', donations: 30, requests: 13 },
-    { name: 'Wed', donations: 20, requests: 98 },
-    { name: 'Thu', donations: 27, requests: 39 },
-    { name: 'Fri', donations: 18, requests: 48 },
-    { name: 'Sat', donations: 23, requests: 38 },
-    { name: 'Sun', donations: 34, requests: 43 },
-  ];
-
   if (loading) return <div className="p-10 flex justify-center text-primary"><Activity className="animate-spin" size={40} /></div>;
-
-  // Assuming active emergencies are computed (requests pending + emergency tag)
-  const activeEmergencies = stats ? Math.floor(stats.pending_requests / 3) : 0; 
-  
-  // Compute Available Units loosely for stats bar
   const totalUnits = stats ? stats.inventory_data.reduce((acc, curr) => acc + curr.count, 0) : 0;
+  const chartData = stats?.weekly_activity || [];
 
   return (
     <div className="space-y-6">
@@ -138,8 +123,8 @@ function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard title="Total Donors" value={stats?.donor_count || 0} icon={Users} trend={2} trendUp={true} />
         <StatCard title="Available Units" value={totalUnits} icon={Droplet} trend={5} trendUp={true} />
-        <StatCard title="Pending Requests" value={stats?.pending_requests || 0} icon={Activity} trend={0} trendUp={true} />
-        <StatCard title="Active Emergencies" value={activeEmergencies} icon={AlertCircle} trend={0} trendUp={true} />
+        <StatCard title="Registered Recipients" value={stats?.recipient_count || 0} icon={HeartPulse} trend={0} trendUp={true} />
+        <StatCard title="Emergency Requests" value={stats?.emergency_requests || 0} icon={AlertCircle} trend={0} trendUp={true} />
       </div>
 
       {/* Charts Section */}
@@ -159,7 +144,7 @@ function Dashboard() {
                     <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                <XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                 <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }} />
@@ -203,6 +188,68 @@ function Dashboard() {
                 );
             })) : (
               <p className="text-sm text-muted-foreground text-center py-4">No donors found yet.</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="bg-card border rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Clock3 className="text-amber-500" />
+              Expiry Alerts
+            </h2>
+            <span className="text-xs font-medium bg-amber-500/10 text-amber-600 px-2 py-1 rounded-full">
+              {stats?.expiring_units_count || 0} in 7 days
+            </span>
+          </div>
+          <div className="space-y-3">
+            {stats?.expiring_soon?.length ? (
+              stats.expiring_soon.map((unit) => (
+                <div key={unit.id} className="rounded-xl border bg-background px-4 py-3 flex items-center justify-between gap-4">
+                  <div>
+                    <p className="font-semibold text-foreground">{unit.blood_group} unit #{unit.id}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Expires {new Date(unit.expiry_date).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-600">
+                    Attention
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">No units are due to expire within the next week.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-card border rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Siren className="text-destructive" />
+              Critical Blood Groups
+            </h2>
+            <span className="text-xs font-medium bg-destructive/10 text-destructive px-2 py-1 rounded-full">
+              Under 10 units
+            </span>
+          </div>
+          <div className="space-y-3">
+            {stats?.critical_groups?.length ? (
+              stats.critical_groups.map((group) => (
+                <div key={group.blood_group} className="rounded-xl border bg-background px-4 py-3 flex items-center justify-between gap-4">
+                  <div>
+                    <p className="font-semibold text-foreground">{group.blood_group}</p>
+                    <p className="text-sm text-muted-foreground">Immediate replenishment recommended</p>
+                  </div>
+                  <span className="rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-bold text-destructive">
+                    {group.available_units} units
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">All blood groups are above the critical threshold.</p>
             )}
           </div>
         </div>

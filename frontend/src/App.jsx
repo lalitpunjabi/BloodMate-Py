@@ -8,6 +8,7 @@ import Register from './pages/Register';
 import AdminLogin from './pages/AdminLogin';
 import Donors from './pages/Donors';
 import Inventory from './pages/Inventory';
+import Recipients from './pages/Recipients';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ isAuthenticated, children }) => {
@@ -42,6 +43,7 @@ function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="donors" element={<Donors />} />
+            <Route path="recipients" element={<Recipients />} />
             <Route path="inventory" element={<Inventory />} />
           </Route>
         </Routes>

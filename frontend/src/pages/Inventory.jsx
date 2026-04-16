@@ -6,6 +6,7 @@ import { exportToCsv } from '../utils/exportCsv';
 function Inventory() {
   const [requests, setRequests] = useState([]);
   const [inventory, setInventory] = useState([]);
+  const [dashboardStats, setDashboardStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const isAdmin = localStorage.getItem('role') === 'admin';
 
@@ -18,6 +19,7 @@ function Inventory() {
       // Fetch Inventory Stats from analytics
       // The backend analytics endpoint returns { inventory_data: [{blood_group, count}] }
       const statRes = await api.get('/analytics/dashboard');
+      setDashboardStats(statRes.data);
       
       // Standardize Blood Groups
       const standardGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
@@ -138,6 +140,18 @@ function Inventory() {
                 </div>
                 <span className="text-xs text-muted-foreground">{new Date(req.created_at).toLocaleDateString()}</span>
               </div>
+
+              <div className="mt-4 rounded-lg bg-background px-3 py-3 border">
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="font-medium text-foreground">Compatibility Coverage</span>
+                  <span className={`font-bold ${req.compatible_available_units >= req.units_required ? 'text-green-600' : 'text-destructive'}`}>
+                    {req.compatible_available_units || 0} matching units
+                  </span>
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Eligible donor groups: {(req.compatible_blood_groups || []).join(', ') || 'Not available'}
+                </p>
+              </div>
               
               {isAdmin && req.status === 'pending' && (
                 <div className="mt-4 flex gap-2">
@@ -178,6 +192,64 @@ function Inventory() {
               </span>
             </div>
           ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="rounded-xl border bg-card p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold">Expiring Soon</h2>
+            <span className="text-xs font-bold bg-amber-500/10 text-amber-600 px-2 py-1 rounded-full">
+              {dashboardStats?.expiring_units_count || 0} alerts
+            </span>
+          </div>
+          <div className="space-y-3">
+            {dashboardStats?.expiring_soon?.length ? (
+              dashboardStats.expiring_soon.map((unit) => (
+                <div key={unit.id} className="flex items-center justify-between rounded-lg border bg-background px-4 py-3">
+                  <div>
+                    <p className="font-medium">{unit.blood_group} unit #{unit.id}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Expires {new Date(unit.expiry_date).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <span className="text-xs font-bold text-amber-600">Review</span>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">No near-expiry units right now.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-xl border bg-card p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold">Recent Match Readiness</h2>
+            <span className="text-xs font-bold bg-primary/10 text-primary px-2 py-1 rounded-full">
+              Live analysis
+            </span>
+          </div>
+          <div className="space-y-3">
+            {dashboardStats?.request_matches?.length ? (
+              dashboardStats.request_matches.map((match) => (
+                <div key={match.id} className="rounded-lg border bg-background px-4 py-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-medium">{match.patient_name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {match.blood_group} • {match.units_required} units • {match.urgency_level}
+                      </p>
+                    </div>
+                    <span className={`text-sm font-bold ${match.compatible_available_units >= match.units_required ? 'text-green-600' : 'text-destructive'}`}>
+                      {match.compatible_available_units} ready
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">No pending requests to evaluate.</p>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -39,6 +39,7 @@ class User(Base):
     
     donor_profile = relationship("DonorProfile", back_populates="user", uselist=False)
     blood_requests = relationship("BloodRequest", back_populates="requested_by_user")
+    recipient_profiles = relationship("RecipientProfile", back_populates="created_by_user")
 
 class DonorProfile(Base):
     __tablename__ = "donor_profiles"
@@ -53,6 +54,22 @@ class DonorProfile(Base):
     
     user = relationship("User", back_populates="donor_profile")
     donations = relationship("BloodUnit", back_populates="donor")
+
+
+class RecipientProfile(Base):
+    __tablename__ = "recipient_profiles"
+
+    id = Column(Integer, primary_key=True, index=True)
+    full_name = Column(String(255), nullable=False)
+    blood_group = Column(SQLEnum(BloodGroupEnum), nullable=False, index=True)
+    hospital = Column(String(255), nullable=False)
+    phone = Column(String(50))
+    diagnosis = Column(String(255))
+    notes = Column(String(500))
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    created_by_user = relationship("User", back_populates="recipient_profiles")
 
 class BloodUnit(Base):
     __tablename__ = "blood_units"

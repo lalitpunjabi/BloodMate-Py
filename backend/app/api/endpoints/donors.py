@@ -33,4 +33,4 @@ def get_donors(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_admin)
 ):
-    return db.query(models.DonorProfile).all()
+    return db.query(models.DonorProfile).order_by(models.DonorProfile.id.desc()).all()

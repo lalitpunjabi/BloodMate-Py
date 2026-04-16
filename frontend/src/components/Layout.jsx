@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navigate, Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Activity, Settings, LogOut, Moon, Sun, HeartPulse } from 'lucide-react';
+import { LayoutDashboard, Users, Activity, LogOut, Moon, Sun, HeartPulse, Hospital } from 'lucide-react';
 import clsx from 'clsx';
 
 function Layout({ isAuthenticated, setIsAuthenticated }) {
@@ -28,6 +28,7 @@ function Layout({ isAuthenticated, setIsAuthenticated }) {
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, adminOnly: false },
     { name: 'Donors', path: '/donors', icon: Users, adminOnly: true },
+    { name: 'Recipients', path: '/recipients', icon: Hospital, adminOnly: false },
     { name: 'Inventory & Requests', path: '/inventory', icon: Activity, adminOnly: false },
   ];
 

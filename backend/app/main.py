@@ -30,10 +30,11 @@ def read_root():
     return {"message": "Welcome to BloodMate API. Visit /docs for API documentation."}
 
 # We will include routers here
-from app.api.endpoints import auth, donors, inventory, requests, analytics, campaigns
+from app.api.endpoints import auth, donors, inventory, requests, analytics, campaigns, recipients
 
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
 app.include_router(donors.router, prefix=f"{settings.API_V1_STR}/donors", tags=["donors"])
+app.include_router(recipients.router, prefix=f"{settings.API_V1_STR}/recipients", tags=["recipients"])
 app.include_router(inventory.router, prefix=f"{settings.API_V1_STR}/inventory", tags=["inventory"])
 app.include_router(requests.router, prefix=f"{settings.API_V1_STR}/requests", tags=["requests"])
 app.include_router(analytics.router, prefix=f"{settings.API_V1_STR}/analytics", tags=["analytics"])

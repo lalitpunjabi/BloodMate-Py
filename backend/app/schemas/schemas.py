@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, List
+from typing import Optional
 from datetime import datetime
 from app.db.models import RoleEnum, BloodGroupEnum, RequestStatusEnum
 
@@ -30,6 +30,15 @@ class UserResponse(UserBase):
     class Config:
         from_attributes = True
 
+
+class UserSummary(BaseModel):
+    id: int
+    email: EmailStr
+    full_name: str
+
+    class Config:
+        from_attributes = True
+
 # Donor Profile Schemas
 class DonorProfileBase(BaseModel):
     blood_group: BloodGroupEnum
@@ -44,6 +53,7 @@ class DonorProfileResponse(DonorProfileBase):
     user_id: int
     last_donation_date: Optional[datetime]
     eligibility_status: bool
+    user: Optional[UserSummary] = None
 
     class Config:
         from_attributes = True
@@ -78,13 +88,38 @@ class BloodRequestBase(BaseModel):
     urgency_level: str = "Normal"
 
 class BloodRequestCreate(BloodRequestBase):
-    pass
+    recipient_profile_id: Optional[int] = None
 
 class BloodRequestResponse(BloodRequestBase):
     id: int
     status: RequestStatusEnum
     requested_by: int
     created_at: datetime
+    compatible_available_units: Optional[int] = None
+    compatible_blood_groups: list[BloodGroupEnum] = []
+
+    class Config:
+        from_attributes = True
+
+
+class RecipientProfileBase(BaseModel):
+    full_name: str
+    blood_group: BloodGroupEnum
+    hospital: str
+    phone: Optional[str] = None
+    diagnosis: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class RecipientProfileCreate(RecipientProfileBase):
+    pass
+
+
+class RecipientProfileResponse(RecipientProfileBase):
+    id: int
+    created_by: int
+    created_at: datetime
+    created_by_user: Optional[UserSummary] = None
 
     class Config:
         from_attributes = True
