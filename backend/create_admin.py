@@ -1,12 +1,17 @@
 import argparse
+import bcrypt
 import getpass
 import sys
 
 from sqlalchemy.orm import Session
 
-from app.core.security import get_password_hash
 from app.db.database import SessionLocal, engine
 from app.db import models
+
+
+def get_password_hash(password: str) -> str:
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 
 
 def parse_args() -> argparse.Namespace:
